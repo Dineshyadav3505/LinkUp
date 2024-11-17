@@ -1,13 +1,48 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import "../global.css";
+
+// Navigation
+import { NavigationContainer } from "@react-navigation/native"
+import { createNativeStackNavigator } from "@react-navigation/native-stack"
+
+
+// screens
+import Welcome from './screens/Welcome'
+import Home from './screens/Home'
+import Details from './screens/Details'
+
+export type RootStackPramList = {
+  Welcome: undefined;
+  Home: undefined;
+  Details: undefined;
+}
+
+const Stack = createNativeStackNavigator<RootStackPramList>()
 
 export default function App() {
   return (
-    <View>
-      <Text className='mt-10 text-red-400'>Open up App.tsx frllo to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator initialRouteName='Welcome'>
+        <Stack.Screen
+          name="Welcome"
+          component={Welcome}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Home"
+          component={Home}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="Details"
+          component={Details}
+          options={{
+            title: "Product details"
+          }}
+        />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
