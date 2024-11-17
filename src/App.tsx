@@ -12,13 +12,13 @@ import Welcome from './screens/Welcome'
 import Home from './screens/Home'
 import Details from './screens/Details'
 
-export type RootStackPramList = {
+export type RootStackParamList = {
   Welcome: undefined;
   Home: undefined;
   Details: undefined;
 }
 
-const Stack = createNativeStackNavigator<RootStackPramList>()
+const Stack = createNativeStackNavigator<RootStackParamList>()
 
 export default function App() {
   return (

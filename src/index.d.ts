@@ -1,3 +1,5 @@
+declare module '*.png';
+
 interface Product {
     id: string;
     name: string;
