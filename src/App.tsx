@@ -14,10 +14,12 @@ import Forget from './screens/Forget'
 import Login from './screens/Login'
 import Home from './screens/Home'
 import Details from './screens/Details'
+import CodeVerification from './screens/CodeVerification'
 
 export type RootStackParamList = {
   welcome: undefined;
   signUp: undefined;
+  codeVerification: { email: string, phone: string, name: string, password: string };
   login: undefined;
   forget: undefined;
   home: undefined;
@@ -38,6 +40,11 @@ export default function App() {
         <Stack.Screen
           name="signUp"
           component={SignUp}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="codeVerification"
+          component={CodeVerification}
           options={{ headerShown: false }}
         />
         <Stack.Screen

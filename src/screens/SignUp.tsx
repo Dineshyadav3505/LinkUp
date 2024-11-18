@@ -11,35 +11,96 @@ import LinkButton from '../components/LinkButton';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'signUp'>
 
-
 const SignUp = () => {
   const navigation = useNavigation<NavigationProp>()
+  const [name, setName] = React.useState('');
+  const [email, setEmail] = React.useState('');
+  const [phone, setPhone] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [error, setError] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  const validateName = (text: string) => {
+    return text.length >= 3 ? null : 'Name must be at least 3 characters long';
+  }
+
+  const validateEmail = (text: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(text) ? null : 'Invalid email address';
+  };
+
+  const validatePassword = (text: string) => {
+    return text.length >= 8 ? null : 'Password must be at least 8 characters long';
+  };
+
+  const validatePhone = (text: string) => {
+    const phoneRegex = /^\d{10}$/;
+    return phoneRegex.test(text) ? null : 'Invalid phone number';
+  }
 
   return (
     <SafeAreaView className='px-5 flex-1 justify-start mt-[30%]'>
       <View>
-        <Text className='text-4xl font-bold text-text'>Hey,</Text>
+        <Text className='text-4xl font-bold text-text'>Hey, </Text>
         <Text className='text-4xl font-bold text-text'>Welcome To LinkUp!</Text>
       </View>
 
       <View className='mt-6'>
         <Text className='text-base text-textLight mb-2'>Please sign-up to continue</Text>
-        <TextInput icon={<NameIcon />} placeholder='Enter your name' />
-        <TextInput icon={<EmailIcon />} placeholder='Enter your email' />
-        <TextInput icon={<PhoneIcon />} placeholder='Enter your phone' />
-        <TextInput icon={<PasswordIcon />} placeholder='Enter your password' />
+        <TextInput
+          icon={<NameIcon />}
+          placeholder='Enter your full name'
+          value={name}
+          onChangeText={setName}
+          keyboardType="default"
+          validate={validateName}
+        />
+        <TextInput
+          icon={<EmailIcon />}
+          placeholder='Enter your email'
+          value={email}
+          onChangeText={setEmail}
+          validate={validateEmail}
+          keyboardType="email-address"
+          autoCapitalize="none"
+        />
+        <TextInput
+          icon={<PhoneIcon />}
+          placeholder='Enter your phone'
+          value={phone}
+          onChangeText={setPhone}
+          validate={validatePhone}
+          keyboardType='phone-pad'
+        />
+        <TextInput
+          icon={<PasswordIcon />}
+          placeholder='Enter your password'
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry={true}
+          validate={validatePassword}
+        />
       </View>
 
-
-
-      <LinkButton title='Sign Up' buttonStyle="mt-10 drop-shadow-sm" onPress={()=> navigation.push('home')} />
-
+      <LinkButton
+        title='Sign Up'
+        buttonStyle="mt-10 drop-shadow-sm"
+        onPress={() => navigation.push('codeVerification', {
+          email,
+          phone,
+          name,
+          password
+        })}
+      />
       <View className='mt-6'>
-        <Text className='text-base font-medium text-textLight text-center'>Already have an account? <Text className='text-primary' onPress={()=> navigation.push('login')}>Log In</Text></Text>
+        <Text className='text-base font-medium text-textLight text-center'>
+          Already have an account? <Text className='text-primary' onPress={() => navigation.push('login')}>Log In</Text>
+        </Text>
       </View>
     </SafeAreaView>
   );
 };
+
 
 const EmailIcon = () => (
   <SvgXml
