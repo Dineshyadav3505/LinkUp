@@ -14,7 +14,7 @@ const LinkButton = ({ title, buttonStyle, textStyle, onPress }: LinkButtonProps)
       className={`mx-auto bg-primary w-full rounded-2xl  ${buttonStyle}`} 
       onPress={onPress}
     >
-      <Text className={`mx-auto py-3 font-bold text-xl text-gray drop-shadow-lg  ${textStyle}`}>{title}</Text>
+      <Text className={`text-center py-3 font-bold text-xl text-white drop-shadow-lg  ${textStyle}`}>{title}</Text>
     </Pressable>
   )
 }
