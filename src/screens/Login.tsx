@@ -12,7 +12,7 @@ import Loading from '../components/Loading';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'login'>;
 
-const Login = () => {
+const Login: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -20,11 +20,16 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError('Please enter both email and password');
+      return;
+    }
+
     try {
       setLoading(true);
       setError('');
       // Replace with your actual API call
-      const response = await fetch('https://api.example.com/login', {
+      const response = await fetch('http://localhost:1234/api/v1/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -32,6 +37,8 @@ const Login = () => {
         body: JSON.stringify({ email, password })
       });
       const data = await response.json();
+      
+      console.log(data);
       if (response.ok) {
         navigation.navigate('home');
       } else {
@@ -44,18 +51,18 @@ const Login = () => {
     }
   };
 
-  const validateEmail = (text:string) => {
+  const validateEmail = (text: string): string | null => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(text) ? null : 'Invalid email address';
   };
 
-  const validatePassword = (text:string) => {
+  const validatePassword = (text: string): string | null => {
     return text.length >= 8 ? null : 'Password must be at least 8 characters long';
   };
 
   return (
     <SafeAreaView className='px-5 flex-1 justify-start mt-[30%]'>
-      {loading && <View> <Loading/> </View>}
+      {loading && <Loading />}
       <View>
         <Text className='text-4xl font-bold text-text'>Hey,</Text>
         <Text className='text-4xl font-bold text-text'>Welcome Back</Text>
@@ -108,7 +115,7 @@ const Login = () => {
   );
 };
 
-const EmailIcon = () => (
+const EmailIcon: React.FC = () => (
   <SvgXml
     xml={`
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#494949" class="size-6">
@@ -120,7 +127,7 @@ const EmailIcon = () => (
   />
 );
 
-const PasswordIcon = () => (
+const PasswordIcon: React.FC = () => (
   <SvgXml
     xml={`
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#494949" class="size-6">
