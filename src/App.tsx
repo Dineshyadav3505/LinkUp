@@ -9,13 +9,19 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack"
 
 // screens
 import Welcome from './screens/Welcome'
+import SignUp from './screens/SignUp'
+import Forget from './screens/Forget'
+import Login from './screens/Login'
 import Home from './screens/Home'
 import Details from './screens/Details'
 
 export type RootStackParamList = {
-  Welcome: undefined;
-  Home: undefined;
-  Details: undefined;
+  welcome: undefined;
+  signUp: undefined;
+  login: undefined;
+  forget: undefined;
+  home: undefined;
+  details: undefined;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -23,19 +29,34 @@ const Stack = createNativeStackNavigator<RootStackParamList>()
 export default function App() {
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName='Welcome'>
+      <Stack.Navigator initialRouteName='welcome'>
         <Stack.Screen
-          name="Welcome"
+          name="welcome"
           component={Welcome}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Home"
+          name="signUp"
+          component={SignUp}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="forget"
+          component={Forget}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="home"
           component={Home}
           options={{ headerShown: false }}
         />
         <Stack.Screen
-          name="Details"
+          name="details"
           component={Details}
           options={{
             title: "Product details"
