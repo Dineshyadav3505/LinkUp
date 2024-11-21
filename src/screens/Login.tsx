@@ -37,15 +37,17 @@ const Login: React.FC = () => {
         body: JSON.stringify({ email, password })
       });
       const data = await response.json();
-      
-      console.log(data);
-      if (response.ok) {
-        navigation.navigate('home');
+
+      if (data.statusCode >= 200 && data.statusCode < 300) {
+        const token = 
+        navigation.navigate(data.data.userData.role);
+
       } else {
         setError(data.message || 'Login failed');
       }
     } catch (error) {
       setError('An error occurred. Please try again.');
+
     } finally {
       setLoading(false);
     }
