@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp, validatePathConfig } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SvgXml } from 'react-native-svg';
 
@@ -60,14 +60,6 @@ const CodeVerification = () => {
 
             setResponseCode(data.data)
 
-            console.log(responseCode)
-
-
-            // if (response.ok) {
-            //     navigation.navigate('home');
-            // } else {
-            //     setError(data.message || 'Login failed');
-            // }
         } catch (error) {
             setError('An error occurred. Please try again.');
         }
@@ -89,12 +81,43 @@ const CodeVerification = () => {
         }
     };
 
-    const verifyCode = () => {
+    const verifyCode = async () => {
         const enteredCode = code.join('');
         console.log('Verifying code:', enteredCode);
 
         if (enteredCode === responseCode) {
-            Alert.alert('Success', 'Code verified successfully!');
+            try {
+                const response = await fetch('http://localhost:1234/api/v1/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, phone, name, password, code: enteredCode })
+                });
+                const data = await response.json();
+
+                console.log(data);
+
+                if (data.statusCode >= 200 && data.statusCode < 300) {
+                    console.log('Navigating to:', data.data.createdUser.role);
+                    navigation.navigate(data.data.createdUser.role);
+                    // if (data.data.createdUser) {
+                    //     console.log("Data success: ", data.success);
+                    //     console.log('Navigating to:', data.data.createdUser);
+                    // }
+                    // else {
+                    //     setError(data.message || 'Registration failed');
+                    // }
+                } else {
+                    setError(data.message || 'Registration failed');
+                }
+
+                setResponseCode(data.data)
+
+            } catch (error) {
+                setError('An error occurred. Please try again.');
+            }
+
         } else {
             Alert.alert('Error', 'Invalid code. Please try again.');
         }

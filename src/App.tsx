@@ -15,6 +15,7 @@ import Login from './screens/Login'
 import Home from './screens/Home'
 import Details from './screens/Details'
 import CodeVerification from './screens/CodeVerification'
+import Client from './screens/Client'
 
 export type RootStackParamList = {
   welcome: undefined;
@@ -24,6 +25,7 @@ export type RootStackParamList = {
   forget: undefined;
   home: undefined;
   details: undefined;
+  client: undefined;
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>()
@@ -50,6 +52,11 @@ export default function App() {
         <Stack.Screen
           name="login"
           component={Login}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="client"
+          component={Client}
           options={{ headerShown: false }}
         />
         <Stack.Screen
