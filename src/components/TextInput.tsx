@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, TextInput as RNTextInput, TextInputProps as RNTextInputProps, Text } from 'react-native';
 import { IconProps } from 'react-native-vector-icons/Icon';
 
-interface TextInputProps extends RNTextInputProps {
+interface TextInputProps extends Omit<RNTextInputProps, 'onChangeText'> {
     placeholder: string;
     className?: string;
     value?: string;
     icon?: React.ReactElement<IconProps>;
-    onChangeText?: (text: string) => void;
-    validate?: (text: string) => string | null; // Validation function
-    errorMessage?: string; // Custom error message
+    required?: boolean;
+    onChangeText: (text: string) => void;
+    errorMessage?: string | null;
 }
 
 const TextInput: React.FC<TextInputProps> = ({
@@ -18,44 +18,33 @@ const TextInput: React.FC<TextInputProps> = ({
     onChangeText,
     icon,
     className = '',
-    validate,
+    required = false,
     errorMessage,
     ...rest
 }) => {
-    const [error, setError] = useState<string | null>(null);
-
     const handleChangeText = (text: string) => {
-        if (onChangeText) {
-            onChangeText(text);
-        }
-
-        if (validate) {
-            const validationError = validate(text);
-            setError(validationError);
-        } else {
-            setError(null);
-        }
+        onChangeText(text);
     };
 
     return (
         <View>
-            <View className={`flex-row items-center border my-3 border-zinc-400 drop-shadow-sm rounded-3xl p-1 ${error ? 'border-red-500' : ''}`}>
+            <View className={`flex-row items-center border my-3 border-zinc-400 drop-shadow-sm rounded-3xl p-1 ${errorMessage ? 'border-red-500' : ''}`}>
                 {icon && (
                     <View className="p-2">
                         {icon}
                     </View>
                 )}
                 <RNTextInput
-                    placeholder={placeholder}
+                    placeholder={`${placeholder}${required ? ' *' : ''}`}
                     value={value}
                     onChangeText={handleChangeText}
                     className={`flex-1 px-2 py-2 text-base text-textLight ${className}`}
                     {...rest}
                 />
             </View>
-            {error && (
+            {errorMessage && (
                 <Text className="text-red-500 text-sm ml-4">
-                    {errorMessage || error}
+                    {errorMessage}
                 </Text>
             )}
         </View>
