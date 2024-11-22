@@ -73,8 +73,10 @@ const SignUp: React.FC = () => {
 
       if (error) throw error;
 
+      console.log(data);
+
       if (data.user) {
-        Alert.alert('Sign Up Successful', 'Please check your inbox for email verification!');
+        // Alert.alert('Sign Up Successful', 'Please check your inbox for email verification!');
         navigation.navigate('home');
       }
     } catch (error) {

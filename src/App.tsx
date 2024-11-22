@@ -14,22 +14,17 @@ import { supabase } from './lib/supabase'; // Make sure this path is correct
 // Screens
 import Welcome from './screens/Welcome';
 import SignUp from './screens/SignUp';
-import Forget from './screens/Forget';
 import Login from './screens/Login';
 import Home from './screens/Home';
 import Details from './screens/Details';
-import CodeVerification from './screens/CodeVerification';
 import Client from './screens/Client';
 
 export type RootStackParamList = {
   welcome: undefined;
   signUp: undefined;
-  codeVerification: { email: string, phone: string, name: string, password: string };
   login: undefined;
-  forget: undefined;
   home: undefined;
   details: undefined;
-  client: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -92,18 +87,8 @@ export default function App() {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="codeVerification"
-              component={CodeVerification}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
               name="login"
               component={Login}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="forget"
-              component={Forget}
               options={{ headerShown: false }}
             />
           </>
