@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TextInput from '../components/TextInput';
 import { SvgXml } from 'react-native-svg';
@@ -8,75 +8,95 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 
 import { RootStackParamList } from '../App'
 import LinkButton from '../components/LinkButton';
+import { supabase } from '../lib/supabase'
+import Loading from '../components/Loading';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'signUp'>
 
 interface FormErrors {
   name: string | null;
   email: string | null;
-  phone: string | null;
   password: string | null;
 }
 
-const SignUp = () => {
+const SignUp: React.FC = () => {
   const navigation = useNavigation<NavigationProp>()
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [errors, setErrors] = useState<FormErrors>({
     name: null,
     email: null,
-    phone: null,
     password: null,
   });
+  const [loading, setLoading] = useState(false);
 
-  const validateName = (text: string) => {
+  const validateName = (text: string): string | null => {
     return text.length >= 3 ? null : 'Name must be at least 3 characters long';
   }
 
-  const validateEmail = (text: string) => {
+  const validateEmail = (text: string): string | null => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(text) ? null : 'Invalid email address';
   };
 
-  const validatePassword = (text: string) => {
+  const validatePassword = (text: string): string | null => {
     return text.length >= 8 ? null : 'Password must be at least 8 characters long';
   };
 
-  const validatePhone = (text: string) => {
-    const phoneRegex = /^\d{10}$/;
-    return phoneRegex.test(text) ? null : 'Invalid phone number';
-  }
-
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors: FormErrors = {
       name: !name ? 'Name is required' : validateName(name),
       email: !email ? 'Email is required' : validateEmail(email),
-      phone: !phone ? 'Phone is required' : validatePhone(phone),
       password: !password ? 'Password is required' : validatePassword(password),
     };
 
     setErrors(newErrors);
 
     if (Object.values(newErrors).every(error => error === null)) {
-      navigation.push('codeVerification', {
-        email,
-        phone,
-        name,
-        password
+      await signUpWithEmail();
+    }
+  };
+
+  const signUpWithEmail = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            full_name: name,
+          }
+        }
       });
+
+      if (error) throw error;
+
+      if (data.user) {
+        Alert.alert('Sign Up Successful', 'Please check your inbox for email verification!');
+        navigation.navigate('home');
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('Error', error.message);
+      } else {
+        Alert.alert('Error', 'An unexpected error occurred');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <SafeAreaView className='px-5 flex-1 justify-start mt-[30%]'>
+      {loading && <Loading />}
       <View>
         <Text className='text-4xl font-bold text-text'>Hey, </Text>
         <Text className='text-4xl font-bold text-text'>Welcome To LinkUp!</Text>
       </View>
 
-      <View className='mt-6'>
+      <View className='mt-10'>
         <Text className='text-base text-textLight mb-2'>Please sign-up to continue</Text>
         <TextInput
           icon={<NameIcon />}
@@ -102,17 +122,6 @@ const SignUp = () => {
           errorMessage={errors.email}
         />
         <TextInput
-          icon={<PhoneIcon />}
-          placeholder='Enter your phone'
-          value={phone}
-          onChangeText={(text) => {
-            setPhone(text);
-            setErrors(prev => ({ ...prev, phone: null }));
-          }}
-          keyboardType='phone-pad'
-          errorMessage={errors.phone}
-        />
-        <TextInput
           icon={<PasswordIcon />}
           placeholder='Enter your password'
           value={password}
@@ -130,38 +139,15 @@ const SignUp = () => {
         buttonStyle="mt-10 drop-shadow-sm"
         onPress={handleSubmit}
       />
+
       <View className='mt-6'>
         <Text className='text-base font-medium text-textLight text-center'>
-          Already have an account? <Text className='text-primary underline' onPress={() => navigation.push('login')}>Log In</Text>
+          Already have an account? <Text className='text-primary underline' onPress={() => navigation.navigate('login')}>Log In</Text>
         </Text>
       </View>
     </SafeAreaView>
   );
 };
-
-const EmailIcon = () => (
-  <SvgXml
-    xml={`
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#494949" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-      </svg>
-    `}
-    width={24}
-    height={24}
-  />
-);
-
-const PasswordIcon = () => (
-  <SvgXml
-    xml={`
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#494949" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
-      </svg>
-    `}
-    width={24}
-    height={24}
-  />
-);
 
 const NameIcon = () => (
   <SvgXml
@@ -175,16 +161,29 @@ const NameIcon = () => (
   />
 );
 
-const PhoneIcon = () => (
+const EmailIcon: React.FC = () => (
   <SvgXml
     xml={`
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#494949" class="size-6">
-        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
       </svg>
     `}
     width={24}
     height={24}
   />
 );
+
+const PasswordIcon: React.FC = () => (
+  <SvgXml
+    xml={`
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="#494949" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+      </svg>
+    `}
+    width={24}
+    height={24}
+  />
+);
+
 
 export default SignUp;

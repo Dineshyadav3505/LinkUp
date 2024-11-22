@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TextInput from '../components/TextInput';
 import { SvgXml } from 'react-native-svg';
@@ -9,6 +9,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../App';
 import LinkButton from '../components/LinkButton';
 import Loading from '../components/Loading';
+
+import { supabase } from '../lib/supabase'
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'login'>;
 
@@ -37,36 +39,37 @@ const Login: React.FC = () => {
   };
 
   const handleLogin = async () => {
-    const newErrors: FormErrors = {
-      email: !email ? 'Email is required' : validateEmail(email),
-      password: !password ? 'Password is required' : validatePassword(password),
-    };
+    // Validate inputs
+    const emailError = validateEmail(email);
+    const passwordError = validatePassword(password);
 
-    setErrors(newErrors);
+    if (emailError || passwordError) {
+      setErrors({
+        email: emailError,
+        password: passwordError,
+      });
+      return;
+    }
 
-    if (Object.values(newErrors).every(error => error === null)) {
-      try {
-        setLoading(true);
-        // Replace with your actual API call
-        const response = await fetch('http://localhost:1234/api/v1/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await response.json();
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
 
-        if (data.statusCode >= 200 && data.statusCode < 300) {
-          navigation.navigate(data.data.userData.role);
-        } else {
-          setErrors(prev => ({ ...prev, email: data.message || 'Login failed' }));
-        }
-      } catch (error) {
-        setErrors(prev => ({ ...prev, email: 'An error occurred. Please try again.' }));
-      } finally {
-        setLoading(false);
+      if (error) throw error;
+
+      // If login is successful, navigate to the main screen or dashboard
+      navigation.navigate('home'); // Adjust this to your app's main screen route
+    } catch (error) {
+      if (error instanceof Error) {
+        Alert.alert('Login Error', error.message);
+      } else {
+        Alert.alert('Login Error', 'An unexpected error occurred');
       }
+    } finally {
+      setLoading(false);
     }
   };
 
