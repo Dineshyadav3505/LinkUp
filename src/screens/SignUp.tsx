@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import TextInput from '../components/TextInput';
@@ -11,14 +11,25 @@ import LinkButton from '../components/LinkButton';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'signUp'>
 
+interface FormErrors {
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  password: string | null;
+}
+
 const SignUp = () => {
   const navigation = useNavigation<NavigationProp>()
-  const [name, setName] = React.useState('');
-  const [email, setEmail] = React.useState('');
-  const [phone, setPhone] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const [error, setError] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState<FormErrors>({
+    name: null,
+    email: null,
+    phone: null,
+    password: null,
+  });
 
   const validateName = (text: string) => {
     return text.length >= 3 ? null : 'Name must be at least 3 characters long';
@@ -38,6 +49,26 @@ const SignUp = () => {
     return phoneRegex.test(text) ? null : 'Invalid phone number';
   }
 
+  const handleSubmit = () => {
+    const newErrors: FormErrors = {
+      name: !name ? 'Name is required' : validateName(name),
+      email: !email ? 'Email is required' : validateEmail(email),
+      phone: !phone ? 'Phone is required' : validatePhone(phone),
+      password: !password ? 'Password is required' : validatePassword(password),
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).every(error => error === null)) {
+      navigation.push('codeVerification', {
+        email,
+        phone,
+        name,
+        password
+      });
+    }
+  };
+
   return (
     <SafeAreaView className='px-5 flex-1 justify-start mt-[30%]'>
       <View>
@@ -51,56 +82,62 @@ const SignUp = () => {
           icon={<NameIcon />}
           placeholder='Enter your full name'
           value={name}
-          onChangeText={setName}
+          onChangeText={(text) => {
+            setName(text);
+            setErrors(prev => ({ ...prev, name: null }));
+          }}
           keyboardType="default"
-          validate={validateName}
+          errorMessage={errors.name}
         />
         <TextInput
           icon={<EmailIcon />}
           placeholder='Enter your email'
           value={email}
-          onChangeText={setEmail}
-          validate={validateEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setErrors(prev => ({ ...prev, email: null }));
+          }}
           keyboardType="email-address"
           autoCapitalize="none"
+          errorMessage={errors.email}
         />
         <TextInput
           icon={<PhoneIcon />}
           placeholder='Enter your phone'
           value={phone}
-          onChangeText={setPhone}
-          validate={validatePhone}
+          onChangeText={(text) => {
+            setPhone(text);
+            setErrors(prev => ({ ...prev, phone: null }));
+          }}
           keyboardType='phone-pad'
+          errorMessage={errors.phone}
         />
         <TextInput
           icon={<PasswordIcon />}
           placeholder='Enter your password'
           value={password}
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            setErrors(prev => ({ ...prev, password: null }));
+          }}
           secureTextEntry={true}
-          validate={validatePassword}
+          errorMessage={errors.password}
         />
       </View>
 
       <LinkButton
         title='Sign Up'
         buttonStyle="mt-10 drop-shadow-sm"
-        onPress={() => navigation.push('codeVerification', {
-          email,
-          phone,
-          name,
-          password
-        })}
+        onPress={handleSubmit}
       />
       <View className='mt-6'>
         <Text className='text-base font-medium text-textLight text-center'>
-          Already have an account? <Text className='text-primary' onPress={() => navigation.push('login')}>Log In</Text>
+          Already have an account? <Text className='text-primary underline' onPress={() => navigation.push('login')}>Log In</Text>
         </Text>
       </View>
     </SafeAreaView>
   );
 };
-
 
 const EmailIcon = () => (
   <SvgXml
@@ -150,4 +187,4 @@ const PhoneIcon = () => (
   />
 );
 
-export default SignUp
+export default SignUp;

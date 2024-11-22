@@ -12,46 +12,20 @@ import Loading from '../components/Loading';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList, 'login'>;
 
+interface FormErrors {
+  email: string | null;
+  password: string | null;
+}
+
 const Login: React.FC = () => {
   const navigation = useNavigation<NavigationProp>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<FormErrors>({
+    email: null,
+    password: null,
+  });
   const [loading, setLoading] = useState(false);
-
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setError('Please enter both email and password');
-      return;
-    }
-
-    try {
-      setLoading(true);
-      setError('');
-      // Replace with your actual API call
-      const response = await fetch('http://localhost:1234/api/v1/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ email, password })
-      });
-      const data = await response.json();
-
-      if (data.statusCode >= 200 && data.statusCode < 300) {
-        const token = 
-        navigation.navigate(data.data.userData.role);
-
-      } else {
-        setError(data.message || 'Login failed');
-      }
-    } catch (error) {
-      setError('An error occurred. Please try again.');
-
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const validateEmail = (text: string): string | null => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -60,6 +34,40 @@ const Login: React.FC = () => {
 
   const validatePassword = (text: string): string | null => {
     return text.length >= 8 ? null : 'Password must be at least 8 characters long';
+  };
+
+  const handleLogin = async () => {
+    const newErrors: FormErrors = {
+      email: !email ? 'Email is required' : validateEmail(email),
+      password: !password ? 'Password is required' : validatePassword(password),
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).every(error => error === null)) {
+      try {
+        setLoading(true);
+        // Replace with your actual API call
+        const response = await fetch('http://localhost:1234/api/v1/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await response.json();
+
+        if (data.statusCode >= 200 && data.statusCode < 300) {
+          navigation.navigate(data.data.userData.role);
+        } else {
+          setErrors(prev => ({ ...prev, email: data.message || 'Login failed' }));
+        }
+      } catch (error) {
+        setErrors(prev => ({ ...prev, email: 'An error occurred. Please try again.' }));
+      } finally {
+        setLoading(false);
+      }
+    }
   };
 
   return (
@@ -75,23 +83,27 @@ const Login: React.FC = () => {
         <TextInput 
           icon={<EmailIcon />} 
           placeholder='Enter your email' 
-          onChangeText={setEmail}
+          onChangeText={(text) => {
+            setEmail(text);
+            setErrors(prev => ({ ...prev, email: null }));
+          }}
           value={email}
-          validate={validateEmail}
+          errorMessage={errors.email}
           keyboardType="email-address"
           autoCapitalize="none"
         />
         <TextInput 
           icon={<PasswordIcon />} 
           placeholder='Enter your password' 
-          onChangeText={setPassword}
+          onChangeText={(text) => {
+            setPassword(text);
+            setErrors(prev => ({ ...prev, password: null }));
+          }}
           value={password}
-          validate={validatePassword}
+          errorMessage={errors.password}
           secureTextEntry
         />
       </View>
-
-      {error ? <Text className='text-red-500 mt-2 text-center'>{error}</Text> : null}
 
       <TouchableOpacity onPress={() => navigation.navigate('forget')}>
         <Text className='text-base font-medium text-textLight text-right mt-4'>
@@ -110,7 +122,7 @@ const Login: React.FC = () => {
           Don't have an account?{' '}
         </Text>
         <TouchableOpacity onPress={() => navigation.navigate('signUp')}>
-          <Text className='text-base font-medium text-primary'>Sign up</Text>
+          <Text className='text-base font-medium text-primary underline'>Sign up</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
