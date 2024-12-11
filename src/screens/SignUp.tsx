@@ -1,3 +1,4 @@
+// SignUp.tsx
 import React, { useState } from 'react';
 import { View, Text, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -76,8 +77,8 @@ const SignUp: React.FC = () => {
       console.log(data);
 
       if (data.user) {
-        // Alert.alert('Sign Up Successful', 'Please check your inbox for email verification!');
-        navigation.navigate('home');
+        Alert.alert('Sign Up Successful', 'Please check your inbox for email verification!');
+        // Navigation to home screen is handled by App.tsx
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -186,6 +187,5 @@ const PasswordIcon: React.FC = () => (
     height={24}
   />
 );
-
 
 export default SignUp;
